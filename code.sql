@@ -35,7 +35,13 @@ ALTER TABLE SALES_DATASET_RFM_PRJ
 
 -- 2. Data Cleaning -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- NULL values
-
+SELECT * FROM SALES_DATASET_RFM_PRJ
+WHERE	ordernumber IS NULL
+	OR quantityordered IS NULL
+	OR priceeach IS NULL
+	OR orderlinenumber IS NULL
+	OR sales IS NULL
+	OR orderdate IS NULL
 
 -- Duplicate values
 
@@ -62,4 +68,34 @@ WHERE 	quantityordered < (SELECT min FROM B2)
 CREATE TABLE sales_dataset_rfm_prj_clean
 AS( SELECT * FROM SALES_DATASET_RFM_PRJ )
 
---
+-- 3. R-F-M Analysis ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Step1: Calculate R, F, M points
+WITH B_1 AS (
+SELECT	customername,
+		current_date - MAX(orderdate) as R,
+		COUNT(ordernumber) as F,
+		SUM(sales) as M
+FROM public.sales_dataset_rfm_prj_clean
+GROUP BY customername
+)
+-- B2: divide R, F, M points into 5 levels
+, B_2 AS (
+SELECT	customername,
+		NTILE(5) OVER(ORDER BY R DESC) as R,
+		NTILE(5) OVER(ORDER BY F) as F,
+		NTILE(5) OVER(ORDER BY M) as M
+FROM B_1
+)
+-- B3: CONCAT(R,F,M)
+, B_3 AS (
+SELECT 	customername,
+		CONCAT(r,f,m) as RFM
+FROM B_2
+)
+-- B4: Segmentation
+SELECT	a.customername, a.rfm, b.segment
+FROM B_3 as a
+INNER JOIN segment_score as b
+	ON a.rfm = b.scores
+
+
