@@ -78,7 +78,7 @@ SELECT	customername,
 FROM public.sales_dataset_rfm_prj_clean
 GROUP BY customername
 )
--- B2: divide R, F, M points into 5 levels
+-- Step2: divide R, F, M points into 5 levels
 , B_2 AS (
 SELECT	customername,
 		NTILE(5) OVER(ORDER BY R DESC) as R,
@@ -86,13 +86,13 @@ SELECT	customername,
 		NTILE(5) OVER(ORDER BY M) as M
 FROM B_1
 )
--- B3: CONCAT(R,F,M)
+-- Step3: CONCAT(R,F,M)
 , B_3 AS (
 SELECT 	customername,
 		CONCAT(r,f,m) as RFM
 FROM B_2
 )
--- B4: Segmentation
+-- Step4: Segmentation
 SELECT	a.customername, a.rfm, b.segment
 FROM B_3 as a
 INNER JOIN segment_score as b
