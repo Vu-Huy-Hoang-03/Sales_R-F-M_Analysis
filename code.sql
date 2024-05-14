@@ -33,6 +33,35 @@ ALTER TABLE SALES_DATASET_RFM_PRJ
 	ALTER COLUMN msrp TYPE SMALLINT USING(msrp::smallint),
   ALTER COLUMN contactfullname TYPE TEXT
 
+
+/* Creating Table for the segmentation R-F-M Scores */
+-- CREATE temporary table
+CREATE TEMP TABLE score
+(
+segment VARCHAR,
+scores VARCHAR	
+)
+-- insert values
+INSERT INTO score
+VALUES
+('Potential Loyalist', '323, 333, 341, 342, 351, 352, 353, 423, 431, 432, 433, 441, 442, 451, 452, 453, 531, 532, 533, 541, 542, 551, 552, 553'),
+('Cannot Lose Them', '113, 114, 115, 144, 154, 155, 214, 215'),
+('Need Attention', '324, 325, 334, 343, 434, 443, 534, 535'),
+('Hibernating customers', '122, 123, 132, 211, 212, 222, 223, 231, 232, 233, 241, 251, 322, 332'),
+('About To Sleep', '213, 221, 231, 241, 251, 312, 321, 331'),
+('Champions', '445, 454, 455, 544, 545, 554, 555'),
+('Promising', '313, 314, 315, 413, 414, 415, 424, 425, 513, 514, 515, 521, 522, 523, 524, 525'),
+('New Customers', '311, 411, 412, 421, 422, 511, 512'),
+('At Risk', '124, 125, 133, 134, 135, 142, 143, 145, 152, 153, 224, 225, 234, 235, 242, 243, 244, 245, 252, 253, 254, 255'),
+('Loyal', '335, 344, 345, 354, 355, 435, 444, 543'),
+('Lost customers', '111, 112, 121, 131, 141, 151')
+-- divide the each R-F-M Scores into a row and create a table for the result
+CREATE TABLE segment_score
+AS(
+SELECT segment, REGEXP_SPLIT_TO_TABLE(scores, ', ')
+FROM score
+)
+	
 -- 2. Data Cleaning -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- NULL values
 SELECT * FROM SALES_DATASET_RFM_PRJ
